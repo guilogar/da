@@ -30,3 +30,15 @@
 *.exe
 *.out
 *.app
+
+# For latex
+*.aux
+*.fdb_latexmk
+*.fls
+*.pdf
+*.log
+*.synctex.gz
+*.zip
+
+# For game
+*.ppm
