@@ -23,30 +23,30 @@ using namespace Asedio;
 
 float cellValue(int row, int col, bool** freeCells, int nCellsWidth, int nCellsHeight,
                 float mapWidth, float mapHeight, List<Object*> obstacles, List<Defense*> defenses,
-                int ce_row = -1, int ce_col = -1)
+                bool isBase = false)
 {
     try // Por si acaso freeCells no es del tamaño esperado, se recoje la excepcion y se devuelve una valoracion negativa
     {
-        if (ce_row >= 0 && ce_col >= 0) // Comprueba si la fila y columna es mayor que cero
+        if (row >= 0 && col >= 0) // Comprueba si la fila y columna es mayor que cero
         {
-            if(ce_row < nCellsWidth && ce_col < nCellsHeight) // Comprueba que la fila y columna este dentro de los margenes del trablero
+            if(row < nCellsWidth && col < nCellsHeight) // Comprueba que la fila y columna este dentro de los margenes del trablero
             {
-                if(freeCells[ce_row][ce_col]) // Comprobacion si el centro de la celda esta disponible
+                if(freeCells[row][col]) // Comprobacion si el centro de la celda esta disponible
                 {
                     int celdaCentroY = nCellsWidth;
                     int celdaCentroX = nCellsHeight;
                     
                     float a = 0.0; // Valoracion de la casilla central en el eje Y
-                    if(ce_row >= celdaCentroY)
-                        a = ce_row*2 - celdaCentroY;
-                    else if(ce_row < celdaCentroY)
-                        a = ce_row;
+                    if(row >= celdaCentroY)
+                        a = row*2 - celdaCentroY;
+                    else if(row < celdaCentroY)
+                        a = row;
                     
                     float b = 0.0; // Valoracion de la casilla central en el eje X
-                    if(ce_col >= celdaCentroX)
-                        b = ce_col*2 - celdaCentroX;
-                    else if(ce_col < celdaCentroX)
-                        b = ce_col;
+                    if(col >= celdaCentroX)
+                        b = col*2 - celdaCentroX;
+                    else if(col < celdaCentroX)
+                        b = col;
                     
                     return a * b; // La mejor valoracion es el centro del tablero
                 } else return 0.0;
@@ -58,7 +58,7 @@ float cellValue(int row, int col, bool** freeCells, int nCellsWidth, int nCellsH
 
 // Esta funcion comprueba si una defensa se puede colocar
 bool factibilidad(int row, int col, int nCellsWidth, int nCellsHeight, float mapWidth, float mapHeight,
-                  List<Object*> obstacles, List<Object*> defenses, Object* base = nullptr)
+                  List<Object*> obstacles, List<Object*> defenses, Object* defense = nullptr)
 {
     /*
      * 1. que no se salga del tablero
@@ -76,32 +76,32 @@ bool factibilidad(int row, int col, int nCellsWidth, int nCellsHeight, float map
         float posicionCentroCeldaY = col + cellHeight;
         Vector3 pf = Vector3(posicionCentroCeldaX, posicionCentroCeldaY, 0);
         
-        if(base != nullptr)
+        if(defense != nullptr)
         {
             for (auto o: obstacles) {
-                if(base == o) continue;
+                if(defense == o) continue;
                 
                 float xObstacle = o->position.x;
                 float yObstacle = o->position.y;
                 Vector3 po = Vector3(xObstacle, yObstacle, 0);
                 
-                if(_distance(pf, po) < (base->radio + o->radio)) return false;
+                if(_distance(pf, po) < (defense->radio + o->radio)) return false;
             }
             
             for (auto d: defenses) {
-                if(base == d) continue;
+                if(defense == d) continue;
                 
                 float xDefense = d->position.x;
                 float yDefense = d->position.y;
                 Vector3 pd = Vector3(xDefense, yDefense, 0);
                 
-                if(_distance(pf, pd) < (base->radio + d->radio)) return false;
+                if(_distance(pf, pd) < (defense->radio + d->radio)) return false;
             }
             
-            if(pf.x + base->radio > mapWidth || pf.x - base->radio < 0)
+            if(pf.x + defense->radio > mapWidth || pf.x - defense->radio < 0)
                 return false;
             
-            if(pf.y + base->radio > mapHeight || pf.y - base->radio < 0)
+            if(pf.y + defense->radio > mapHeight || pf.y - defense->radio < 0)
                 return false;
         } else return false;
         
@@ -117,15 +117,39 @@ void DEF_LIB_EXPORTED placeDefenses(bool** freeCells, int nCellsWidth, int nCell
     float cellWidth = mapWidth / nCellsWidth;
     float cellHeight = mapHeight / nCellsHeight;
     
-    int maxAttemps = 1000;
-    List<Defense*>::iterator currentDefense = defenses.begin();
+    float tablero[nCellsHeight][nCellsWidth];
     
-    while(currentDefense != defenses.end() && maxAttemps > 0) {
-        (*currentDefense)->position.x = ((int)(_RAND2(nCellsWidth))) * cellWidth + cellWidth * 0.5f;
-        (*currentDefense)->position.y = ((int)(_RAND2(nCellsHeight))) * cellHeight + cellHeight * 0.5f;
-        (*currentDefense)->position.z = 0;
-        ++currentDefense;
+    float maxValue = 0.0;
+    int base_i = 0;
+    int base_j = 0;
+    
+    for (int i = 0; i < nCellsHeight; i++)
+    {
+        for (int j = 0; j < nCellsWidth; j++)
+        {
+            tablero[i][j] = cellValue(i, j, freeCells, nCellsWidth, nCellsHeight,
+                                      mapWidth, mapHeight, obstacles, defenses,
+                                      true);
+            
+        }
     }
+    List<Defense*>::iterator base = defenses.begin();
+    
+    // Falta meter en un vector una estructura que identifique el valor de la celda, y su x e y coordenada
+    // Una vez tenga eso, ordeno el vector y voy entrayendo en orden de mayor a menor valoracion
+    // Utilizo la funcion de factibilidad, y si es factible esa posicion, pongo la base.
+    // Despues, se vuelve a valorar todas y cada una de las celdas, y sorpresa sorpresa, se colocan las defensas.
+    int maxAttemps = 1000;
+    
+    
+    /*
+     *while(currentDefense != defenses.end() && maxAttemps > 0) {
+     *    (*currentDefense)->position.x = ((int)(_RAND2(nCellsWidth))) * cellWidth + cellWidth * 0.5f;
+     *    (*currentDefense)->position.y = ((int)(_RAND2(nCellsHeight))) * cellHeight + cellHeight * 0.5f;
+     *    (*currentDefense)->position.z = 0;
+     *    ++currentDefense;
+     *}
+     */
     
     #ifdef PRINT_DEFENSE_STRATEGY
     
