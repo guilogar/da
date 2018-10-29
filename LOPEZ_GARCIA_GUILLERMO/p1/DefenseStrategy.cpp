@@ -20,6 +20,15 @@ RAND_TYPE SimpleRandomGenerator::a;
 #include <exception>
 
 using namespace Asedio;
+using namespace std;
+
+struct Valoracion // Estructura para guardar una valoracion, con la fila y columna que se hace
+{
+    float value_;
+    int i_, j_;
+    Valoracion(int i = 0, int j = 0, int value = 0.0) : i_(i), j_(j), value_(value) {}
+    bool operator < (const Valoracion& v) { return ( value_ < v.value_ ); }
+};
 
 float cellValue(int row, int col, bool** freeCells, int nCellsWidth, int nCellsHeight,
                 float mapWidth, float mapHeight, List<Object*> obstacles, List<Defense*> defenses,
@@ -38,13 +47,13 @@ float cellValue(int row, int col, bool** freeCells, int nCellsWidth, int nCellsH
                     
                     float a = 0.0; // Valoracion de la casilla central en el eje Y
                     if(row >= celdaCentroY)
-                        a = row*2 - celdaCentroY;
+                        a = celdaCentroY*2 - row;
                     else if(row < celdaCentroY)
                         a = row;
                     
                     float b = 0.0; // Valoracion de la casilla central en el eje X
                     if(col >= celdaCentroX)
-                        b = col*2 - celdaCentroX;
+                        b = celdaCentroX*2 - col;
                     else if(col < celdaCentroX)
                         b = col;
                     
@@ -58,7 +67,7 @@ float cellValue(int row, int col, bool** freeCells, int nCellsWidth, int nCellsH
 
 // Esta funcion comprueba si una defensa se puede colocar
 bool factibilidad(int row, int col, int nCellsWidth, int nCellsHeight, float mapWidth, float mapHeight,
-                  List<Object*> obstacles, List<Object*> defenses, Object* defense = nullptr)
+                  List<Object*> obstacles, List<Defense*> defenses, Object* defense = NULL)
 {
     /*
      * 1. que no se salga del tablero
@@ -76,39 +85,79 @@ bool factibilidad(int row, int col, int nCellsWidth, int nCellsHeight, float map
         float posicionCentroCeldaY = col + cellHeight;
         Vector3 pf = Vector3(posicionCentroCeldaX, posicionCentroCeldaY, 0);
         
-        if(defense != nullptr)
+        if(defense != NULL)
         {
-            for (auto o: obstacles) {
-                if(defense == o) continue;
-                
-                float xObstacle = o->position.x;
-                float yObstacle = o->position.y;
+            List<Object*>::iterator o = obstacles.begin();
+            while (o != obstacles.end())
+            {
+                float xObstacle = (*o)->position.x;
+                float yObstacle = (*o)->position.y;
                 Vector3 po = Vector3(xObstacle, yObstacle, 0);
                 
-                if(_distance(pf, po) < (defense->radio + o->radio)) return false;
+                /*
+                 *std::cout << "Vector3 pf = " << pf.x << ", " << pf.y << ", " << pf.z << std::endl;
+                 *std::cout << "Vector3 po = " << po.x << ", " << po.y << ", " << po.z << std::endl;
+                 */
+                
+                if(_distance(pf, po) < (defense->radio + (*o)->radio)) return false;
+                ++o;
             }
             
-            for (auto d: defenses) {
-                if(defense == d) continue;
+            List<Defense*>::iterator d = defenses.begin();
+            while (d != defenses.end())
+            {
+                if(defense == (*d)) { ++d; continue; } // Si estamos comparando una defensa con ella misma
                 
-                float xDefense = d->position.x;
-                float yDefense = d->position.y;
+                float xDefense = (*d)->position.x;
+                float yDefense = (*d)->position.y;
+                
+                if(xDefense < 0 || yDefense < 0) { ++d; continue; } // Si la defensa no esta colocada, no se compara con ella
+                
                 Vector3 pd = Vector3(xDefense, yDefense, 0);
                 
-                if(_distance(pf, pd) < (defense->radio + d->radio)) return false;
+                /*
+                 *std::cout << "Vector3 pf = " << pf.x << ", " << pf.y << ", " << pf.z << std::endl;
+                 *std::cout << "Vector3 pd = " << pd.x << ", " << pd.y << ", " << pd.z << std::endl;
+                 */
+                if(_distance(pf, pd) < (defense->radio + (*d)->radio)) return false;
+                /*
+                 *std::cout << "Distancia => " << _distance(pf, pd) << std::endl;
+                 *std::cout << "Suma de radios => " << ((defense->radio + (*d)->radio)) << std::endl;
+                 */
+                ++d;
             }
             
-            if(pf.x + defense->radio > mapWidth || pf.x - defense->radio < 0)
-                return false;
+            // Si la defensa se sale por los bordes
+            if(pf.x + defense->radio > mapWidth || pf.x - defense->radio < 0) return false;
+            if(pf.y + defense->radio > mapHeight || pf.y - defense->radio < 0) return false;
             
-            if(pf.y + defense->radio > mapHeight || pf.y - defense->radio < 0)
-                return false;
-        } else return false;
-        
-        factible = true;
+            return true; // Para todas las condiciones
+        }
     }
 
     return factible;
+}
+
+std::vector<Valoracion> obtenerValoraciones(bool** freeCells, int nCellsWidth, int nCellsHeight,
+                                            float mapWidth, float mapHeight, std::list<Object*> obstacles,
+                                            std::list<Defense*> defenses, bool isBase = false)
+{
+    std::vector<Valoracion> valoracionesCeldas; // Vector de valoraciones
+    
+    for (int i = 0; i < nCellsHeight; i++)
+    {
+        for (int j = 0; j < nCellsWidth; j++)
+        {
+            float v = cellValue(i, j, freeCells, nCellsWidth, nCellsHeight,
+                                mapWidth, mapHeight, obstacles, defenses,
+                                isBase);
+            valoracionesCeldas.push_back(Valoracion(i, j, v)); // Se valora una celda
+        }
+    }
+    
+    std::sort(valoracionesCeldas.begin(), valoracionesCeldas.end()); // Se ordena el vector de mayor a menor valoracion
+    
+    return valoracionesCeldas;
 }
 
 void DEF_LIB_EXPORTED placeDefenses(bool** freeCells, int nCellsWidth, int nCellsHeight, float mapWidth,
@@ -117,39 +166,60 @@ void DEF_LIB_EXPORTED placeDefenses(bool** freeCells, int nCellsWidth, int nCell
     float cellWidth = mapWidth / nCellsWidth;
     float cellHeight = mapHeight / nCellsHeight;
     
-    float tablero[nCellsHeight][nCellsWidth];
+    // Vector de valoraciones para la base
+    std::vector<Valoracion> valoracionesCeldas =
+        obtenerValoraciones(freeCells, nCellsWidth, nCellsHeight,
+                            mapWidth, mapHeight, obstacles, defenses, true);
     
-    float maxValue = 0.0;
-    int base_i = 0;
-    int base_j = 0;
-    
-    for (int i = 0; i < nCellsHeight; i++)
+    //if(!defenses.empty())
+    List<Defense*>::iterator currentDefense = defenses.begin(); // Se instancia todas las posiciones de las defensas a un
+                                                                // valor negativo para indicar que no estan colocadas.
+    while(currentDefense != defenses.end())
     {
-        for (int j = 0; j < nCellsWidth; j++)
-        {
-            tablero[i][j] = cellValue(i, j, freeCells, nCellsWidth, nCellsHeight,
-                                      mapWidth, mapHeight, obstacles, defenses,
-                                      true);
-            
-        }
+        (*currentDefense)->position.x = -1;
+        (*currentDefense)->position.y = -1;
+        (*currentDefense)->position.z = -1;
+        ++currentDefense;
     }
-    List<Defense*>::iterator base = defenses.begin();
     
-    // Falta meter en un vector una estructura que identifique el valor de la celda, y su x e y coordenada
-    // Una vez tenga eso, ordeno el vector y voy entrayendo en orden de mayor a menor valoracion
-    // Utilizo la funcion de factibilidad, y si es factible esa posicion, pongo la base.
-    // Despues, se vuelve a valorar todas y cada una de las celdas, y sorpresa sorpresa, se colocan las defensas.
-    int maxAttemps = 1000;
+    currentDefense = defenses.begin(); // Se actualiza el iterador al principio
+    while(!valoracionesCeldas.empty()) // Mientras que hayas celdas disponibles
+    {
+        int row = valoracionesCeldas.rbegin()->i_;
+        int col = valoracionesCeldas.rbegin()->j_;
+        
+        // Se comprueba que esa celda sea factible para colocar la defensa (como es la primera, la base)
+        if(factibilidad(row, col, nCellsWidth, nCellsHeight, mapWidth, mapHeight, obstacles, defenses, (*currentDefense)))
+        {
+            //std::cout << "Es valido para => " << row << ", " << col << std::endl;
+            (*currentDefense)->position.x = row;
+            (*currentDefense)->position.y = col;
+            (*currentDefense)->position.z = 0;
+            break;
+        }
+        valoracionesCeldas.pop_back(); // Se actualiza el vector de valoraciones
+    }
     
+    // Vector de valoraciones para el resto de las defensas
+    valoracionesCeldas = obtenerValoraciones(freeCells, nCellsWidth, nCellsHeight,
+                                              mapWidth, mapHeight, obstacles, defenses);
     
-    /*
-     *while(currentDefense != defenses.end() && maxAttemps > 0) {
-     *    (*currentDefense)->position.x = ((int)(_RAND2(nCellsWidth))) * cellWidth + cellWidth * 0.5f;
-     *    (*currentDefense)->position.y = ((int)(_RAND2(nCellsHeight))) * cellHeight + cellHeight * 0.5f;
-     *    (*currentDefense)->position.z = 0;
-     *    ++currentDefense;
-     *}
-     */
+    while(++currentDefense != defenses.end() && !valoracionesCeldas.empty())
+    {
+        int row = valoracionesCeldas.rbegin()->i_;
+        int col = valoracionesCeldas.rbegin()->j_;
+        
+        // Se comprueba que esa celda sea factible para colocar la defensa (como es la primera, la base)
+        if(factibilidad(row, col, nCellsWidth, nCellsHeight, mapWidth, mapHeight, obstacles, defenses, (*currentDefense)))
+        {
+            //std::cout << "Es valido para => " << row << ", " << col << std::endl;
+            (*currentDefense)->position.x = row;
+            (*currentDefense)->position.y = col;
+            (*currentDefense)->position.z = 0;
+            //std::cout << (*currentDefense)->position.x << std::endl;
+        }
+        valoracionesCeldas.pop_back(); // Se actualiza el vector de valoraciones
+    }
     
     #ifdef PRINT_DEFENSE_STRATEGY
     
