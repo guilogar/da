@@ -47,8 +47,8 @@ float cellValue(int row, int col, bool** freeCells, int nCellsWidth, int nCellsH
             {
                 if(freeCells[row][col]) // Comprobacion si el centro de la celda esta disponible
                 {
-                    int celdaCentroY = nCellsWidth;
-                    int celdaCentroX = nCellsHeight;
+                    int celdaCentroY = nCellsWidth / 2;
+                    int celdaCentroX = nCellsHeight / 2;
 
                     float a = 0.0; // Valoracion de la casilla central en el eje Y
                     if(row >= celdaCentroY)
@@ -189,8 +189,10 @@ void DEF_LIB_EXPORTED placeDefenses(bool** freeCells, int nCellsWidth, int nCell
     }
 
     // Vector de valoraciones para el resto de las defensas
-    valoracionesCeldas = obtenerValoraciones(freeCells, nCellsWidth, nCellsHeight,
-                                              mapWidth, mapHeight, obstacles, defenses);
+    /*
+     *valoracionesCeldas = obtenerValoraciones(freeCells, nCellsWidth, nCellsHeight,
+     *                                          mapWidth, mapHeight, obstacles, defenses);
+     */
 
     while(++currentDefense != defenses.end())
     {
