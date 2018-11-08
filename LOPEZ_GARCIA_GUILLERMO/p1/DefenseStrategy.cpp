@@ -189,10 +189,8 @@ void DEF_LIB_EXPORTED placeDefenses(bool** freeCells, int nCellsWidth, int nCell
     }
 
     // Vector de valoraciones para el resto de las defensas
-    /*
-     *valoracionesCeldas = obtenerValoraciones(freeCells, nCellsWidth, nCellsHeight,
-     *                                          mapWidth, mapHeight, obstacles, defenses);
-     */
+    valoracionesCeldas = obtenerValoraciones(freeCells, nCellsWidth, nCellsHeight,
+                                              mapWidth, mapHeight, obstacles, defenses);
 
     while(++currentDefense != defenses.end())
     {
