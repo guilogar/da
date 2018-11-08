@@ -39,7 +39,7 @@ float cellValue(int row, int col, bool** freeCells, int nCellsWidth, int nCellsH
                 float mapWidth, float mapHeight, List<Object*> obstacles, List<Defense*> defenses,
                 bool isBase = false)
 {
-    try // Por si acaso freeCells no es del tama�o esperado, se recoje la excepcion y se devuelve una valoracion negativa
+    try // Por si acaso freeCells no es del tamaño esperado, se recoje la excepcion y se devuelve una valoracion negativa
     {
         if (row >= 0 && col >= 0) // Comprueba si la fila y columna es mayor que cero
         {
