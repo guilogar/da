@@ -1,1 +1,66 @@
-Escriba aquí su respuesta al ejercicio 2.
+\lstset{language=C++, texcl=true}
+
+Respecto a la función de factibilidad, básicamente se comprueba
+si la defensa a colocar choca con algún obstaculo o con alguna
+otra defensa colocada. Así mismo, también comprueba que la defensa
+a colocar no se salga de los bordes del tablero.
+
+La única contrariedad en el desarrollo de está función es que
+no cumple con la programación estructurada, pero porque he decidido
+no programarla así. Considerando motivos de eficiencia y aprovechando
+la capacidad del C++ con su orientación a objetos y su capacidad
+de programación no estructurada, la función tiene varios puntos de
+retorno según las condiciones que se cumplan.
+
+A continuación, el código de la función descrita:
+
+\begin{lstlisting}[frame=single]
+bool factibilidad(int row, int col, int nCellsWidth, int nCellsHeight, float mapWidth, float mapHeight,
+                  List<Object*> obstacles, List<Defense*> defenses, Object* defense = NULL)
+{
+    if(row >= 0 && row <= nCellsWidth && col >= 0 && col <= nCellsHeight)
+    {
+        float cellWidth = mapWidth / nCellsWidth;
+        float cellHeight = mapHeight / nCellsHeight;
+
+        Vector3 pf = cellCenterToPosition(row, col, cellWidth, cellHeight);
+
+        if(defense != NULL)
+        {
+            List<Object*>::iterator o = obstacles.begin();
+            while (o != obstacles.end())
+            {
+                float xObstacle = (*o)->position.x;
+                float yObstacle = (*o)->position.y;
+                Vector3 po = Vector3(xObstacle, yObstacle, 0);
+
+                if(_distance(pf, po) < (defense->radio + (*o)->radio)) return false;
+                ++o;
+            }
+
+            List<Defense*>::iterator d = defenses.begin();
+            while (d != defenses.end())
+            {
+                if(defense == (*d)) { ++d; continue; } // Si estamos comparando una defensa con ella misma
+
+                float xDefense = (*d)->position.x;
+                float yDefense = (*d)->position.y;
+
+                if(xDefense < 0 || yDefense < 0) { ++d; continue; } // Si la defensa no esta colocada, no se compara con ella
+
+                Vector3 pd = Vector3(xDefense, yDefense, 0);
+
+                if(_distance(pf, pd) < (defense->radio + (*d)->radio)) return false;
+                ++d;
+            }
+
+            // Si la defensa se sale por los bordes
+            if(pf.x + defense->radio > mapWidth || pf.x - defense->radio < 0) return false;
+            if(pf.y + defense->radio > mapHeight || pf.y - defense->radio < 0) return false;
+
+            return true; // Para todas las condiciones
+        }
+    }
+    return false;
+}
+\end{lstlisting}

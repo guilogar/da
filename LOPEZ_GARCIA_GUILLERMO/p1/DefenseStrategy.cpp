@@ -96,12 +96,6 @@ std::vector<Valoracion> obtenerValoraciones(bool** freeCells, int nCellsWidth, i
 bool factibilidad(int row, int col, int nCellsWidth, int nCellsHeight, float mapWidth, float mapHeight,
                   List<Object*> obstacles, List<Defense*> defenses, Object* defense = NULL)
 {
-    /*
-     * 1. que no se salga del tablero
-     * 2. que no colisione con un obstaculo
-     * 3. que no colisione con las defensas que estan colocadas
-     */
-
     if(row >= 0 && row <= nCellsWidth && col >= 0 && col <= nCellsHeight)
     {
         float cellWidth = mapWidth / nCellsWidth;
