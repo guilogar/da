@@ -1,5 +1,3 @@
-\lstset{language=C++, texcl=true}
-
 Respecto a la función de factibilidad, básicamente se comprueba
 si la defensa a colocar choca con algún obstaculo o con alguna
 otra defensa colocada. Así mismo, también comprueba que la defensa
@@ -14,6 +12,7 @@ retorno según las condiciones que se cumplan.
 
 A continuación, el código de la función descrita:
 
+\lstset{language=C++, texcl=true}
 \begin{lstlisting}[frame=single]
 bool factibilidad(int row, int col, int nCellsWidth, int nCellsHeight, float mapWidth, float mapHeight,
                   List<Object*> obstacles, List<Defense*> defenses, Object* defense = NULL)

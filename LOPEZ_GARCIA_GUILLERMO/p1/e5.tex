@@ -1,1 +1,54 @@
-Escriba aquí su respuesta al ejercicio 5.
+La función para otorgar un determinado valor a cada una de las
+celdas se basa en dar mayor puntuación a las celdas cuyo centro
+esta libre y además, se encuentren mas cerca del centro del
+tablero. En caso contrario a que su centro este libre, reciben
+una puntuación de 0. Cuanto mas lejos este la celda a puntar
+del centro, en cualquiera de los 4 sentidos, recibirá menor
+puntuación.
+
+Por otra parte, al evaluar todas las celdas así, no distingo
+si el centro de extracción ya ha sido colocado o no. Tan solo
+evalúo según las distancia con el centro del terreno.
+
+A continuación, expongo la función descrita llamada cellValue:
+
+\lstset{language=C++, texcl=true}
+\begin{lstlisting}[frame=single]
+float cellValue(int row, int col, bool** freeCells, int nCellsWidth, int nCellsHeight,
+                float mapWidth, float mapHeight, List<Object*> obstacles, List<Defense*> defenses,
+                bool isBase = false)
+{
+    try // Por si acaso freeCells no es del tamaño esperado, se recoje la excepcion y se devuelve una valoracion negativa
+    {
+        if (row >= 0 && col >= 0) // Comprueba si la fila y columna es mayor que cero
+        {
+            if(row < nCellsWidth && col < nCellsHeight) // Comprueba que la fila y columna este dentro de los margenes del trablero
+            {
+                if(freeCells[row][col]) // Comprobacion si el centro de la celda esta disponible
+                {
+                    int celdaCentroY = nCellsWidth / 2;
+                    int celdaCentroX = nCellsHeight / 2;
+
+                    float a = 0.0; // Valoracion de la casilla central en el eje Y
+                    if(row >= celdaCentroY)
+                        a = celdaCentroY*2 - row;
+                    else if(row < celdaCentroY)
+                        a = row;
+
+                    float b = 0.0; // Valoracion de la casilla central en el eje X
+                    if(col >= celdaCentroX)
+                        b = celdaCentroX*2 - col;
+                    else if(col < celdaCentroX)
+                        b = col;
+
+                    return a * b; // La mejor valoracion es el centro del tablero
+                } else return 0.0;
+            }
+        }
+    } catch(std::exception &e) {}
+    return -1; // Por si se manda a valorar una celda que no esta dentro del tablero
+}
+\end{lstlisting}
+
+Como es obvio, le paso un parametro para saber si voy a evaluar para colocar la base
+o el resto de las defensas, pero eso se utilizará en futuras versiones del algoritmo.

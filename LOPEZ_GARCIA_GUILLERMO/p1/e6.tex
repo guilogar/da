@@ -1,13 +1,91 @@
-\begin{lstlisting}
-// sustituya este codigo por su respuesta
-void placeDefenses(...) {
+He aquí el algoritmo completo, tanto para colocar la primera defensa,
+centro de extracción, como para colocar el resto de las defensas:
 
-    List<Defense*>::iterator currentDefense = defenses.begin();
-    while(currentDefense != defenses.end() && maxAttemps > 0) {
+\lstset{language=C++, texcl=true}
+\begin{lstlisting}[frame=single]
+void DEF_LIB_EXPORTED placeDefenses(bool** freeCells, int nCellsWidth, int nCellsHeight, float mapWidth,
+                                    float mapHeight, std::list<Object*> obstacles, std::list<Defense*> defenses)
+{
+    float cellWidth = mapWidth / nCellsWidth;
+    float cellHeight = mapHeight / nCellsHeight;
 
-        (*currentDefense)->position.x = ((int)(_RAND2(nCellsWidth))) * cellWidth + cellWidth * 0.5f;
-        ...
+    // Vector de valoraciones para la base
+    std::vector<Valoracion> valoracionesCeldas =
+        obtenerValoraciones(freeCells, nCellsWidth, nCellsHeight,
+                            mapWidth, mapHeight, obstacles, defenses, true);
+
+    //if(!defenses.empty())
+    List<Defense*>::iterator currentDefense = defenses.begin(); // Se instancia todas las posiciones de las defensas a un
+                                                                // valor negativo para indicar que no estan colocadas.
+    while(currentDefense != defenses.end())
+    {
+        (*currentDefense)->position.x = -1;
+        (*currentDefense)->position.y = -1;
+        (*currentDefense)->position.z = -1;
         ++currentDefense;
     }
+
+    currentDefense = defenses.begin(); // Se actualiza el iterador al principio
+    while(!valoracionesCeldas.empty()) // Mientras que hayas celdas disponibles
+    {
+        int row = valoracionesCeldas.rbegin()->i_;
+        int col = valoracionesCeldas.rbegin()->j_;
+
+        // Se comprueba que esa celda sea factible para colocar la defensa (como es la primera, la base)
+        if(factibilidad(row, col, nCellsWidth, nCellsHeight, mapWidth, mapHeight, obstacles, defenses, (*currentDefense)))
+        {
+            Vector3 v = cellCenterToPosition(row, col, cellWidth, cellHeight);
+            (*currentDefense)->position.x = v.x;
+            (*currentDefense)->position.y = v.y;
+            (*currentDefense)->position.z = 0;
+            break;
+        }
+        valoracionesCeldas.pop_back(); // Se actualiza el vector de valoraciones
+    }
+
+    // Vector de valoraciones para el resto de las defensas
+    valoracionesCeldas = obtenerValoraciones(freeCells, nCellsWidth, nCellsHeight,
+                                              mapWidth, mapHeight, obstacles, defenses);
+
+    while(++currentDefense != defenses.end())
+    {
+        while(!valoracionesCeldas.empty())
+        {
+            int row = valoracionesCeldas.rbegin()->i_;
+            int col = valoracionesCeldas.rbegin()->j_;
+
+            // Se comprueba que esa celda sea factible para colocar la defensa (como es la primera, la base)
+            if(factibilidad(row, col, nCellsWidth, nCellsHeight, mapWidth, mapHeight,
+                            obstacles, defenses, (*currentDefense)))
+            {
+                Vector3 v = cellCenterToPosition(row, col, cellWidth, cellHeight);
+                (*currentDefense)->position.x = v.x;
+                (*currentDefense)->position.y = v.y;
+                (*currentDefense)->position.z = 0;
+                break;
+            }
+            valoracionesCeldas.pop_back(); // Se actualiza el vector de valoraciones
+            std::sort(valoracionesCeldas.begin(), valoracionesCeldas.end());
+        }
+    }
+
+    #ifdef PRINT_DEFENSE_STRATEGY
+
+        float** cellValues = new float* [nCellsHeight];
+        for(int i = 0; i < nCellsHeight; ++i) {
+           cellValues[i] = new float[nCellsWidth];
+           for(int j = 0; j < nCellsWidth; ++j) {
+               cellValues[i][j] = ((int)(cellValue(i, j))) % 256;
+           }
+        }
+
+        dPrintMap("strategy.ppm", nCellsHeight, nCellsWidth, cellHeight, cellWidth,
+                  freeCells , cellValues, std::list<Defense*>(), true);
+
+        for(int i = 0; i < nCellsHeight; ++i) delete [] cellValues[i];
+        delete [] cellValues;
+        cellValues = NULL;
+
+    #endif
 }
 \end{lstlisting}

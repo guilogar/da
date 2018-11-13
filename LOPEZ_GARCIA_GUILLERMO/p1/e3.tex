@@ -1,13 +1,91 @@
-\begin{lstlisting}
-// sustituya este codigo por su respuesta
-void placeDefenses(...) {
+El algoritmo voraz que resuelve el problema es el siguiente:
 
-    List<Defense*>::iterator currentDefense = defenses.begin();
-    while(currentDefense != defenses.end() && maxAttemps > 0) {
+\lstset{language=C++, texcl=true}
+\begin{lstlisting}[frame=single]
+    float cellWidth = mapWidth / nCellsWidth;
+    float cellHeight = mapHeight / nCellsHeight;
 
-        (*currentDefense)->position.x = ((int)(_RAND2(nCellsWidth))) * cellWidth + cellWidth * 0.5f;
-        ...
+    // Vector de valoraciones para la base
+    std::vector<Valoracion> valoracionesCeldas =
+        obtenerValoraciones(freeCells, nCellsWidth, nCellsHeight,
+                            mapWidth, mapHeight, obstacles, defenses, true);
+
+    //if(!defenses.empty())
+    List<Defense*>::iterator currentDefense = defenses.begin(); // Se instancia todas las posiciones de las defensas a un
+                                                                // valor negativo para indicar que no estan colocadas.
+    while(currentDefense != defenses.end())
+    {
+        (*currentDefense)->position.x = -1;
+        (*currentDefense)->position.y = -1;
+        (*currentDefense)->position.z = -1;
         ++currentDefense;
     }
+
+    currentDefense = defenses.begin(); // Se actualiza el iterador al principio
+    while(!valoracionesCeldas.empty()) // Mientras que hayas celdas disponibles
+    {
+        int row = valoracionesCeldas.rbegin()->i_;
+        int col = valoracionesCeldas.rbegin()->j_;
+
+        // Se comprueba que esa celda sea factible para colocar la defensa (como es la primera, la base)
+        if(factibilidad(row, col, nCellsWidth, nCellsHeight, mapWidth, mapHeight, obstacles, defenses, (*currentDefense)))
+        {
+            Vector3 v = cellCenterToPosition(row, col, cellWidth, cellHeight);
+            (*currentDefense)->position.x = v.x;
+            (*currentDefense)->position.y = v.y;
+            (*currentDefense)->position.z = 0;
+            break;
+        }
+        valoracionesCeldas.pop_back(); // Se actualiza el vector de valoraciones
+    }
+\end{lstlisting}
+
+Para poder utilizar abstraer el concepto de valorar una celda,
+he decidido crear una estructura llamada Valoracion que encierra
+el valor de una valoracion y las posiciones de la misma dentro del
+tablero.
+
+He aquí la definición de la misma:
+
+\lstset{language=C++, texcl=true}
+\begin{lstlisting}[frame=single]
+struct Valoracion // Estructura para guardar una valoracion, con la fila y columna que se hace
+{
+    float value_;
+    int i_, j_;
+    Valoracion(int i = 0, int j = 0, int value = 0.0) : i_(i), j_(j), value_(value) {}
+    bool operator < (const Valoracion& v) { return ( value_ < v.value_ ); }
+};
+\end{lstlisting}
+
+Además, redefino el operador < de la estructura para posteriormente, poder ordernar
+un vector de este tipo.
+
+A continuación, se muestra la función que devuelve un vector de valoraciones
+ordenados de menor a mayor, así pues, el orden de escojer la mayor valoración
+es siempre de O(1):
+
+\lstset{language=C++, texcl=true}
+\begin{lstlisting}[frame=single]
+std::vector<Valoracion> obtenerValoraciones(bool** freeCells, int nCellsWidth, int nCellsHeight,
+                                            float mapWidth, float mapHeight, std::list<Object*> obstacles,
+                                            std::list<Defense*> defenses, bool isBase = false)
+{
+    std::vector<Valoracion> valoracionesCeldas; // Vector de valoraciones
+
+    for (int i = 0; i < nCellsHeight; i++)
+    {
+        for (int j = 0; j < nCellsWidth; j++)
+        {
+            float v = cellValue(i, j, freeCells, nCellsWidth, nCellsHeight,
+                                mapWidth, mapHeight, obstacles, defenses,
+                                isBase);
+            valoracionesCeldas.push_back(Valoracion(i, j, v)); // Se valora una celda
+        }
+    }
+
+    std::sort(valoracionesCeldas.begin(), valoracionesCeldas.end()); // Se ordena el vector de mayor a menor valoracion
+
+    return valoracionesCeldas;
 }
 \end{lstlisting}
