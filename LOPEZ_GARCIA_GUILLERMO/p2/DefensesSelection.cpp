@@ -54,7 +54,7 @@ void DEF_LIB_EXPORTED selectDefenses(std::list<Defense*> defenses, unsigned int 
     }
     std::sort(valoraciones.begin(), valoraciones.end()); // Se ordena de mayor a menor valoracion
                                                          // Mediante la sobrecarga del operador <
-    std::vector<ValoracionDefensa> valoraciones2 = valoraciones; // Se copian las valoraciones
+    std::vector<ValoracionDefensa> valoracionesCopia = valoraciones; // Se copian las valoraciones
     
     std::vector< std::vector<double> > tsp(valoraciones.size(), std::vector<double>(ases));
     // Estructura para la tsp
@@ -101,9 +101,9 @@ void DEF_LIB_EXPORTED selectDefenses(std::list<Defense*> defenses, unsigned int 
     {
         if(tsp[row][col] != tsp[row - 1][col])
         {
-            size_t id = valoraciones2[row].id_;
+            size_t id = valoracionesCopia[row].id_;
             selectedIDs.push_back(id);
-            col -= valoraciones2[row].coste_;
+            col -= valoracionesCopia[row].coste_;
         }
         row -= 1;
     }
@@ -111,7 +111,7 @@ void DEF_LIB_EXPORTED selectDefenses(std::list<Defense*> defenses, unsigned int 
     // Comprobación de la primera fila de la tsp
     if(tsp[row][col] != 0)
     {
-        size_t id = valoraciones2[row].id_;
+        size_t id = valoracionesCopia[row].id_;
         selectedIDs.push_back(id);
     }
 }

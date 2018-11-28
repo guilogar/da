@@ -1,3 +1,18 @@
-$$ f(radio,rango,salud)=(radio+rango)-1+rango^2+3\frac{radio}{salud} $$
+$$ f(rango,danio,dispersion,aps,vida,coste)={rango}\times{0,3} + {danio}\times{0,2} + {dispersion}\times{0,1} +
+                                            {aps}\times{0,1} + {vida}\times{0,1} + {coste}\times{0,2} $$
 
-Escriba aquí su respuesta al ejercicio 1.
+Respecto a la función que da valor a cada una de las defensas,
+es tan solo una función que retorna una valor "double" después
+de aplicar la formúla anteriormente expuesta. Para más detalle,
+se pone a continuación. \\
+
+\begin{lstlisting}
+double darValorDefensa(Defense* d) // funcion para valorar las defensas
+{
+    double valor = 0.0;
+    valor += (d->range * 0.3) + (d->damage * 0.2) + (d->dispersion * 0.1);
+    valor += (d->attacksPerSecond * 0.1) + (d->health * 0.1) - (d->cost * 0.2);
+    
+    return valor;
+}
+\end{lstlisting}

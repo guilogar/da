@@ -1,1 +1,14 @@
-Escriba aquí su respuesta al ejercicio 2.
+Para representar la tabla de subproblemas resueltos, he escogido crear
+una matrix compuesta por vectores de vectores de tipo size_t de la stl.\\
+
+He escogido esa forma para despúes poder sacar o asignar valores de forma
+más sencilla que con los vectores de bajo nivel.\\
+
+Para más detalle, vease la línea a continuación.\\
+
+\begin{lstlisting}
+std::vector< std::vector<double> > tsp(valoraciones.size(), std::vector<double>(ases));
+\end{lstlisting}
+
+Queda aclarar que valoraciones en un vector que posee todas las valoraciones de las defensas,
+excepto de la primera, que se coloca siempre por defecto, sin consultar.\\
