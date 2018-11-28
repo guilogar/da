@@ -1,15 +1,24 @@
-\begin{lstlisting}
-// sustituya este codigo por su respuesta
-void selectDefenses(...) {
-
-    unsigned int cost = 0;
-    std::list<Defense*>::iterator it = defenses.begin();
-    while(it != defenses.end()) {
-        if(cost + (*it)->cost <= ases) {
-            selectedIDs.push_back((*it)->id);
-            cost += (*it)->cost;
+\lstset{language=C++, texcl=true}
+\begin{lstlisting}[frame=single]
+    // Resolución del problema, dando marcha atras a la tsp
+    unsigned int row = tsp.size ()-1;
+    unsigned int col = ases-1;
+    
+    while (row > 0 && col > 0) // Bucle para hacer la marcha atras
+    {
+        if (tsp[row][col]!= tsp[row-1][col])
+        {
+            size_t id = valoracionesCopia[row].id_;
+            selectedIDs.push_back (id);
+            col -= valoracionesCopia[row].coste_;
         }
-        ++it;
+        row -= 1;
     }
-}
+    
+    // Comprobación de la primera fila de la tsp
+    if (tsp[row][col]!= 0)
+    {
+        size_t id = valoracionesCopia[row].id_;
+        selectedIDs.push_back (id);
+    }
 \end{lstlisting}
