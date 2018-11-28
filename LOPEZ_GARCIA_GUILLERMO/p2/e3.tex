@@ -1,62 +1,58 @@
 \lstset{language=C++, texcl=true}
 \begin{lstlisting}[frame=single]
 
-void DEF_LIB_EXPORTED selectDefenses(std::list<Defense*> defenses, unsigned int ases,
-                                     std::list<int> &selectedIDs , float mapWidth,
+void DEF_LIB_EXPORTED selectDefenses (std::list<Defense*> defenses, unsigned int ases,
+                                     std::list<int> &selectedIDs, float mapWidth,
                                      float mapHeight, std::list<Object*> obstacles)
 {
     std::vector<ValoracionDefensa> valoraciones; // Crea vector de valoraciones
-    std::list<Defense*>::iterator it = defenses.begin(); // iterador para recorrer las defensas
+    std::list<Defense*>::iterator it = defenses.begin (); // iterador para recorrer las defensas
     
-    selectedIDs.push_back((*it)->id); // Se compra la primera defensa forzosamente
+    selectedIDs.push_back ((*it)->id); // Se compra la primera defensa forzosamente
     ases -= (*it)->cost; // Se disminuye la cantidad de ases disponibles para las defensas normales
-    while(++it != defenses.end()) // Bucle elegante para recorrer y valorar las defensas
+    while (++it!= defenses.end ()) // Bucle elegante para recorrer y valorar las defensas
     {
-        valoraciones.push_back(
-           ValoracionDefensa(
-               (*it)->id, (*it)->cost, darValorDefensa((*it)) // Se crea una Valoracion de la defensa
-           )
-        );
+        valoraciones.push_back (ValoracionDefensa ((*it)->id, (*it)->cost, darValorDefensa ((*it)) // Se crea una Valoracion de la defensa));
     }
-    std::sort(valoraciones.begin(), valoraciones.end()); // Se ordena de mayor a menor valoracion
+    std::sort (valoraciones.begin (), valoraciones.end ()); // Se ordena de mayor a menor valoracion
                                                          // Mediante la sobrecarga del operador <
     std::vector<ValoracionDefensa> valoracionesCopia = valoraciones; // Se copian las valoraciones
     
-    std::vector< std::vector<double> > tsp(valoraciones.size(), std::vector<double>(ases));
+    std::vector< std::vector<double> > tsp (valoraciones.size (), std::vector<double> (ases));
     // Estructura para la tsp
     
-    for (int i = 0; tsp.size() && !valoraciones.empty(); i++) // Bucle externo para acceder a las distintas
+    for (int i = 0; tsp.size () &&!valoraciones.empty (); i++) // Bucle externo para acceder a las distintas
                                                               // valoraciones
     {
-        ValoracionDefensa& vd = *(valoraciones.rbegin()); // Se obtiene la menor valoracion
+        ValoracionDefensa& vd = * (valoraciones.rbegin ()); // Se obtiene la menor valoracion
         
-        for (int j = 0; j < tsp[i].size(); j++)
+        for (int j = 0; j < tsp[i].size (); j++)
         {
-            if(i <= 0) // Condicion para la primera fila
+            if (i <= 0) // Condicion para la primera fila
             {
-                if(j < vd.coste_) tsp[i][j] = 0;
+                if (j < vd.coste_) tsp[i][j] = 0;
                 else tsp[i][j] = vd.coste_;
             }
             else // Caso general de la tsp
             {
-                if(j < vd.coste_) tsp[i][j] = tsp[i - 1][j];
+                if (j < vd.coste_) tsp[i][j] = tsp[i-1][j];
                 else
                 {
-                    if(j == vd.coste_)
+                    if (j == vd.coste_)
                     {
-                        if(tsp[i][j-1] < vd.valor_) tsp[i][j] = vd.valor_;
+                        if (tsp[i][j-1] < vd.valor_) tsp[i][j] = vd.valor_;
                     }
                     else
                     {
-                        double antiguo_valor = tsp[i - 1][j];
-                        double nuevo_valor = tsp[i - 1][j-vd.coste_] + vd.valor_;
+                        double antiguo_valor = tsp[i-1][j];
+                        double nuevo_valor = tsp[i-1][j-vd.coste_] + vd.valor_;
                         
-                        tsp[i][j] = (antiguo_valor < nuevo_valor) ? nuevo_valor : antiguo_valor;
+                        tsp[i][j] = (antiguo_valor < nuevo_valor)? nuevo_valor: antiguo_valor;
                     }
                 }
             }
         }
-        valoraciones.pop_back(); // Se elimina la menor valoracion
+        valoraciones.pop_back (); // Se elimina la menor valoracion
     }
 }
 \end{lstlisting}
