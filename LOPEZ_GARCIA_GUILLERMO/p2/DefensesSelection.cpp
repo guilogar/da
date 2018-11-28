@@ -17,8 +17,8 @@ struct ValoracionDefensa {
     size_t id_;
     unsigned int coste_;
     double valor_;
-    ValoracionDefensa(size_t id = 0, unsigned int coste = 0, double valor = 0.0) : 
-                      id_(id), coste_(coste), valor_(valor) {}
+    ValoracionDefensa(size_t id = 0, unsigned int coste = 0, double valor = 0.0) :
+                      id_(id), coste_(coste), valor_(valor) { }
     bool operator <(const ValoracionDefensa& vd) { return coste_ >= vd.coste_; }
     // La sobrecarga del operador < es contradictoria debido a que se deseaba
     // que las defensas peor valoradas estuvieran al final del vector
