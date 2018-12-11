@@ -76,9 +76,11 @@ void DEF_LIB_EXPORTED selectDefenses(std::list<Defense*> defenses, unsigned int 
                 if(j < vd.coste_) tsp[i][j] = tsp[i - 1][j];
                 else
                 {
-                    if(j == vd.coste_)
+                    if(j == vd.coste_) // Si se ha llegado a la columna que es igual al coste de la defensa
                     {
-                        if(tsp[i][j-1] < vd.valor_) tsp[i][j] = vd.valor_;
+                        if(tsp[i][j-1] < vd.valor_) tsp[i][j] = vd.valor_; // Si el valor de la columna anterior es menor
+                                                                           // al actual, entonces se pone la valoracion
+                                                                           // de la defensa actual
                     }
                     else
                     {
