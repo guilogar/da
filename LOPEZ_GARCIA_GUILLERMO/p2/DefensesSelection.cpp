@@ -69,26 +69,18 @@ void DEF_LIB_EXPORTED selectDefenses(std::list<Defense*> defenses, unsigned int 
             if(i <= 0) // Condicion para la primera fila
             {
                 if(j < vd.coste_) tsp[i][j] = 0;
-                else tsp[i][j] = vd.coste_;
+                else tsp[i][j] = vd.valor_;
             }
             else // Caso general de la tsp
             {
-                if(j < vd.coste_) tsp[i][j] = tsp[i - 1][j];
+                if(j < vd.coste_) tsp[i][j] = tsp[i - 1][j]; // Si todavia no la puede comprar,
+                                                             // pone la fila anterior.
                 else
                 {
-                    if(j == vd.coste_) // Si se ha llegado a la columna que es igual al coste de la defensa
-                    {
-                        if(tsp[i][j-1] < vd.valor_) tsp[i][j] = vd.valor_; // Si el valor de la columna anterior es menor
-                                                                           // al actual, entonces se pone la valoracion
-                                                                           // de la defensa actual
-                    }
-                    else
-                    {
-                        double antiguo_valor = tsp[i - 1][j];
-                        double nuevo_valor = tsp[i - 1][j-vd.coste_] + vd.valor_;
-                        
-                        tsp[i][j] = (antiguo_valor < nuevo_valor) ? nuevo_valor : antiguo_valor;
-                    }
+                    double antiguo_valor = tsp[i - 1][j];
+                    double nuevo_valor = tsp[i - 1][j-vd.coste_] + vd.valor_;
+                    
+                    tsp[i][j] = (antiguo_valor < nuevo_valor) ? nuevo_valor : antiguo_valor;
                 }
             }
         }
