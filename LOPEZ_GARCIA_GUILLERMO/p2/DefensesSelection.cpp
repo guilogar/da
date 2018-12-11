@@ -43,7 +43,7 @@ void DEF_LIB_EXPORTED selectDefenses(std::list<Defense*> defenses, unsigned int 
     std::list<Defense*>::iterator it = defenses.begin(); // iterador para recorrer las defensas
     
     selectedIDs.push_back((*it)->id); // Se compra la primera defensa forzosamente
-    ases -= (*it)->cost; // Se disminuye la cantidad de ases disponibles para las defensas normales
+    ases -= ((*it)->cost + 1); // Se disminuye la cantidad de ases disponibles para las defensas normales
     while(++it != defenses.end()) // Bucle elegante para recorrer y valorar las defensas
     {
         valoraciones.push_back(
@@ -99,7 +99,7 @@ void DEF_LIB_EXPORTED selectDefenses(std::list<Defense*> defenses, unsigned int 
     
     while(row > 0 && col > 0) // Bucle para hacer la marcha atras (^-^)
     {
-        if(tsp[row][col] != tsp[row - 1][col])
+        if(tsp[row][col] != tsp[row - 1][col] && col >= valoracionesCopia[row].coste_)
         {
             size_t id = valoracionesCopia[row].id_;
             selectedIDs.push_back(id);
