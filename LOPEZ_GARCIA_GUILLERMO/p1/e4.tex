@@ -1,1 +1,40 @@
-Escriba aquí su respuesta al ejercicio 4.
+Como algoritmo voraz que es, busca la mejor solución en cada paso,
+pero no comprueba si en los siguientes pasos del problema sigue siendo
+la mejor solución siguiendo cada uno de los caminos. Es decir,
+busca la mejor solución en el menor tiempo posible.
+
+He aquí la parte del algoritmo que más lo define como algoritmo voraz:
+
+\lstset{language=C++, texcl=true}
+\begin{lstlisting}[frame=single]
+    List<Defense*>::iterator currentDefense = defenses.begin(); // Se instancia todas las posiciones de las defensas a un
+                                                                // valor negativo para indicar que no estan colocadas.
+    while(++currentDefense != defenses.end())
+    {
+        while(!valoracionesCeldas.empty())
+        {
+            int row = valoracionesCeldas.rbegin()->i_;
+            int col = valoracionesCeldas.rbegin()->j_;
+
+            // Se comprueba que esa celda sea factible para colocar la defensa (como es la primera, la base)
+            if(factibilidad(row, col, nCellsWidth, nCellsHeight, mapWidth, mapHeight,
+                            obstacles, defenses, (*currentDefense)))
+            {
+                Vector3 v = cellCenterToPosition(row, col, cellWidth, cellHeight);
+                (*currentDefense)->position.x = v.x;
+                (*currentDefense)->position.y = v.y;
+                (*currentDefense)->position.z = 0;
+                break;
+            }
+            valoracionesCeldas.pop_back(); // Se actualiza el vector de valoraciones
+            std::sort(valoracionesCeldas.begin(), valoracionesCeldas.end());
+        }
+    }
+\end{lstlisting}
+
+Como se puede apreciar, coloca cada defensa según la recibe de la lista, pero
+no se preocupa de las propias caracteristas de la defensa o como al colocarla
+antes que otra puede afectar a la calidad de la defensa de la base.
+
+Por tanto, busca la mejor solución en el menor coste de tiempo posible. Es
+un algoritmo voraz.
