@@ -1,1 +1,16 @@
-Escriba aquí su respuesta al ejercicio 1.
+La estructura de datos elegida para representar el mapa es un vector de Valoraciones,
+donde cada Valoracion es a su vez una estructura clásica del c++ que posee comportamiento
+de clase y sobrecarga de operadores.
+
+Aquí el código que especifica dicha estructura:
+
+\lstset{language=C++, texcl=true}
+\begin{lstlisting}[frame=single]
+struct Valoracion // Estructura para guardar una valoracion, con la fila y columna que se hace
+{
+    float value_;
+    int i_, j_;
+    Valoracion(int i = 0, int j = 0, int value = 0.0) : i_(i), j_(j), value_(value) {}
+    bool operator < (const Valoracion& v) { return ( value_ < v.value_ ); }
+};
+\end{lstlisting}

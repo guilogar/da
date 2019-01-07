@@ -1,1 +1,47 @@
-Escriba aquí su respuesta al ejercicio 4.
+\lstset{language=C++, texcl=true}
+\begin{lstlisting}[frame=single]
+std::vector<Valoracion> obtenerValoraciones(bool** freeCells, int nCellsWidth, int nCellsHeight,
+                                            float mapWidth, float mapHeight, std::list<Object*> obstacles,
+                                            std::list<Defense*> defenses, bool isBase = false,
+                                            unsigned int modOrdenacion = 0)
+{
+    std::vector<Valoracion> valoracionesCeldas; // Vector de valoraciones
+    
+    for (int i = 0; i < nCellsHeight; i++)
+    {
+        for (int j = 0; j < nCellsWidth; j++)
+        {
+            float v = defaultCellValue(i, j, freeCells, nCellsWidth, nCellsHeight,
+                                       mapWidth, mapHeight, obstacles, defenses,
+                                       isBase);
+            valoracionesCeldas.push_back(Valoracion(i, j, v)); // Se valora una celda
+        }
+    }
+    
+    switch (modOrdenacion) {
+        case 0: break; // Sin ordenación
+        case 1:
+            {
+                // Ordenacion por fusion
+                valoracionesCeldas = ordenacionPorFusion(valoracionesCeldas);
+            } break;
+        case 2:
+            {
+                // Ordenacion rapida
+                valoracionesCeldas = ordenacionRapida(valoracionesCeldas);
+            } break;
+        case 3:
+            {
+                // Ordenacion por monticulo
+                std::make_heap(valoracionesCeldas.begin(), valoracionesCeldas.end());
+            } break;
+        default:
+            std::sort(
+                    valoracionesCeldas.begin(),
+                    valoracionesCeldas.end()
+            ); // Se ordena el vector de menor a mayor valoracion
+    }
+    
+    return valoracionesCeldas;
+}
+\end{lstlisting}

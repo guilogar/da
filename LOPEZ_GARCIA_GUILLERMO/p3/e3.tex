@@ -1,1 +1,63 @@
-Escriba aquí su respuesta al ejercicio 3.
+\lstset{language=C++, texcl=true}
+\begin{lstlisting}[frame=single]
+int obtenerPivote(std::vector<Valoracion> vector)
+{
+    int p = 0;
+    
+    if(vector.size() > 0)
+    {
+        Valoracion v = vector[0];
+        for (int k = 1; k < vector.size(); k++)
+        {
+            if(v < vector[k])
+            {
+                Valoracion va = vector[p];
+                vector[p] = vector[k];
+                vector[k] = va;
+                p++;
+            }
+        }
+        vector[0] = vector[p];
+        vector[p] = v;
+    }
+    return p;
+}
+
+std::vector<Valoracion> ordenacionRapida(std::vector<Valoracion>& vector)
+{
+    if(vector.size() <= 1) return vector;
+    else if(vector.size() == 2)
+    {
+        if(vector[0] < vector[1])
+        {
+            Valoracion v = vector[0];
+            vector[0] = vector[1];
+            vector[1] = v;
+        }
+    }
+    else
+    {
+        int tamanio = vector.size();
+        int pivote = obtenerPivote(vector);
+        if(pivote == 0) pivote = tamanio / 2;
+        
+        std::vector<Valoracion> primeraMitad;
+        std::vector<Valoracion> segundaMitad;
+        
+        for (int i = 0; i < pivote; i++) { primeraMitad.push_back(vector[i]); }
+        for (int i = pivote; i < tamanio; i++) { segundaMitad.push_back(vector[i]); }
+        
+        primeraMitad = ordenacionRapida(primeraMitad);
+        segundaMitad = ordenacionRapida(segundaMitad);
+        vector.clear();
+        
+        for (int i = 0; i < primeraMitad.size(); i++)
+            vector.push_back(primeraMitad[i]);
+        
+        for (int i = 0; i < segundaMitad.size(); i++)
+            vector.push_back(segundaMitad[i]);
+    }
+    
+    return vector;
+}
+\end{lstlisting}

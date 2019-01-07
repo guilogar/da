@@ -229,14 +229,17 @@ std::vector<Valoracion> obtenerValoraciones(bool** freeCells, int nCellsWidth, i
         case 0: break; // Sin ordenación
         case 1:
             {
+                // Ordenacion por fusion
                 valoracionesCeldas = ordenacionPorFusion(valoracionesCeldas);
             } break;
         case 2:
             {
+                // Ordenacion rapida
                 valoracionesCeldas = ordenacionRapida(valoracionesCeldas);
             } break;
         case 3:
             {
+                // Ordenacion por monticulo
                 std::make_heap(valoracionesCeldas.begin(), valoracionesCeldas.end());
             } break;
         default:
