@@ -75,7 +75,7 @@ std::vector<Valoracion> obtenerValoraciones(bool** freeCells, int nCellsWidth, i
                                             std::list<Defense*> defenses, bool isBase = false)
 {
     std::vector<Valoracion> valoracionesCeldas; // Vector de valoraciones
-
+    
     for (int i = 0; i < nCellsHeight; i++)
     {
         for (int j = 0; j < nCellsWidth; j++)
@@ -86,9 +86,9 @@ std::vector<Valoracion> obtenerValoraciones(bool** freeCells, int nCellsWidth, i
             valoracionesCeldas.push_back(Valoracion(i, j, v)); // Se valora una celda
         }
     }
-
+    
     std::sort(valoracionesCeldas.begin(), valoracionesCeldas.end()); // Se ordena el vector de mayor a menor valoracion
-
+    
     return valoracionesCeldas;
 }
 
@@ -147,13 +147,12 @@ void DEF_LIB_EXPORTED placeDefenses(bool** freeCells, int nCellsWidth, int nCell
 {
     float cellWidth = mapWidth / nCellsWidth;
     float cellHeight = mapHeight / nCellsHeight;
-
+    
     // Vector de valoraciones para la base
     std::vector<Valoracion> valoracionesCeldas =
         obtenerValoraciones(freeCells, nCellsWidth, nCellsHeight,
                             mapWidth, mapHeight, obstacles, defenses, true);
-
-    //if(!defenses.empty())
+    
     List<Defense*>::iterator currentDefense = defenses.begin(); // Se instancia todas las posiciones de las defensas a un
                                                                 // valor negativo para indicar que no estan colocadas.
     while(currentDefense != defenses.end())
