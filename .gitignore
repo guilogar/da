@@ -42,6 +42,7 @@
 
 # For game
 *.ppm
+*.png
 
 # For pack
 *.tar.gz

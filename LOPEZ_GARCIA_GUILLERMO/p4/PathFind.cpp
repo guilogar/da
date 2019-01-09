@@ -51,8 +51,9 @@ bool nodoEnLista(AStarNode* nodo, std::vector<AStarNode*> lista)
 }
 
 void DEF_LIB_EXPORTED calculatePath(AStarNode* originNode, AStarNode* targetNode,
-                                    int cellsWidth, int cellsHeight, float mapWidth,
-                                    float mapHeight, float** additionalCost,
+                                    int cellsWidth, int cellsHeight,
+                                    float mapWidth, float mapHeight,
+                                    float** additionalCost,
                                     std::list<Vector3> &path)
 {
     unsigned long iter = 0;
@@ -87,9 +88,9 @@ void DEF_LIB_EXPORTED calculatePath(AStarNode* originNode, AStarNode* targetNode
                     {
                         nodo->G = distParent + current->G;
                         nodo->F = distTarget + nodo->G;
+                        nodo->parent = current;
                         
                         nodosAbiertos.push_back(nodo);
-                        nodo->parent = current;
                     } else
                     {
                         if(distParent + current->G < nodo->G)
@@ -97,10 +98,6 @@ void DEF_LIB_EXPORTED calculatePath(AStarNode* originNode, AStarNode* targetNode
                             nodo->G = distParent + current->G;
                             nodo->parent = current;
                         }
-                        /*
-                         *float dist = _sdistance(nodo->position, targetNode->position);
-                         *nodo->F = dist;
-                         */
                     }
                 }
             }
@@ -108,7 +105,7 @@ void DEF_LIB_EXPORTED calculatePath(AStarNode* originNode, AStarNode* targetNode
             struct CompararAStarNode
             {
                 int operator() (const AStarNode* a, const AStarNode* b) const
-                { return a->F > b->F; }
+                { return a->F < b->F; }
             } f;
             
             std::sort_heap (nodosAbiertos.begin(), nodosAbiertos.end(), f);
