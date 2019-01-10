@@ -82,12 +82,13 @@ void DEF_LIB_EXPORTED calculatePath(AStarNode* originNode, AStarNode* targetNode
             {
                 if(!nodoEnLista(nodo, nodosCerrados))
                 {
-                    float distTarget = _sdistance(nodo->position, targetNode->position);
-                    float distParent = _sdistance(nodo->position, current->position);
+                    float distTarget = _sdistance(nodo->position, targetNode->position); // Distancia manhatan
+                    float distParent = _sdistance(nodo->position, current->position); // Distancia con el padre
                     if(!nodoEnLista(nodo, nodosAbiertos))
                     {
+                        nodo->H = distTarget;
                         nodo->G = distParent + current->G;
-                        nodo->F = distTarget + nodo->G;
+                        nodo->F = nodo->G + nodo->H;
                         nodo->parent = current;
                         
                         nodosAbiertos.push_back(nodo);
