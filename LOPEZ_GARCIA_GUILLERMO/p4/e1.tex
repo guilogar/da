@@ -1,1 +1,71 @@
-Escriba aquí su respuesta al ejercicio 1.
+Respecto al funcionamiento del algoritmo, se ha empleado el algoritmo A*.
+Es decir, se tienen dos listas de nodos, cerrados y abiertos, donde
+después de analizar un nodo, se incluye dicho nodo a la lista de cerrados
+y sus adyacentes a la lista de abiertos.
+
+Se intera a lo largo de la lista de abiertos hasta encontrar un camino o bien,
+si se acaba la lista de abiertos y no se encuentra una solución.
+
+La ordenación de los nodos mas prometedores se hace mediante la estructura de un
+montículo (proporcionada por la stl).
+
+Una vez encontrada una solución, se sigue iterando en la lista de abiertos hasta
+que se vacie o hasta que se encuentre una solución mejor a la obtenida en
+primera instancia.
+
+Para ordenar el montículo, se ha usado un objeto función propio del C++11 y
+para comprobar si un nodo esta en una lista determinada, se ha usado la siguiente
+función:
+
+\lstset{language=C++, texcl=true}
+\begin{lstlisting}[frame=single]
+bool nodoEnLista(AStarNode* nodo, std::vector<AStarNode*> lista)
+{
+    return (lista.end() != std::find(lista.begin(), lista.end(), nodo));
+}
+\end{lstlisting}
+
+También, hay que aclarar que la lista de nodos, se ha modelado con un vector
+dinámico de la stl del C++11.
+
+Para terminar, diremos que a los atributos F, G y H de los nodos AStarNode,
+se le da un valor dependiendo de la distancia recorrida hasta ese momento
+y el valor proveido de la función:
+
+\lstset{language=C++, texcl=true}
+\begin{lstlisting}[frame=single]
+void DEF_LIB_EXPORTED calculateAdditionalCost(float** additionalCost, int cellsWidth,
+                                              int cellsHeight, float mapWidth,
+                                              float mapHeight, List<Object*> obstacles,
+                                              List<Defense*> defenses)
+{
+    float cellWidth = mapWidth / cellsWidth;
+    float cellHeight = mapHeight / cellsHeight;
+    
+    for(int i = 0 ; i < cellsHeight ; ++i)
+    {
+        for(int j = 0 ; j < cellsWidth ; ++j)
+        {
+            Vector3 cellPosition = cellCenterToPosition(i, j, cellWidth, cellHeight);
+            additionalCost[i][j] = 0; // Por defecto, valor 0
+            
+            for (auto d : defenses)
+            {
+                float distanciaCeldaDefensa = _sdistance(cellPosition, d->position);
+                float diff = d->range - distanciaCeldaDefensa;
+                
+                if(diff < 0) // Si el uco esta dentro del rango de accion de la defensa
+                {
+                    // Se le da un valor alto para que huya de la defensa
+                    // Asi, huye siempre de las defensas mas poderosas siempre
+                    additionalCost[i][j] = diff * d->attacksPerSecond * d->damage * d->health;
+                }
+            }
+        }
+    }
+}
+\end{lstlisting}
+
+Dicha función evalua con un mayor coste las celdas cercanas a las defensas mas poderosas,
+así pues, el camino hacia el centro de extracción será mas caro por donde estén las
+defensas mas poderosas y mas barato por donde estén las defensas mas débiles.
