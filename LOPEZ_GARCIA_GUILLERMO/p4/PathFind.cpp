@@ -36,15 +36,25 @@ void DEF_LIB_EXPORTED calculateAdditionalCost(float** additionalCost, int cellsW
         for(int j = 0 ; j < cellsWidth ; ++j)
         {
             Vector3 cellPosition = cellCenterToPosition(i, j, cellWidth, cellHeight);
-            float cost = 0;
+            additionalCost[i][j] = 0; // Por defecto, valor 0
             
-            if( (i+j) % 2 == 0 ) cost = cellWidth * 100;
-            
-            additionalCost[i][j] = cost;
+            for (auto d : defenses)
+            {
+                float distanciaCeldaDefensa = _sdistance(cellPosition, d->position);
+                float diff = d->range - distanciaCeldaDefensa;
+                
+                if(diff < 0) // Si el uco esta dentro del rango de accion de la defensa
+                {
+                    // Se le da un valor alto para que huya de la defensa
+                    // Asi, huye siempre de las defensas mas poderosas siempre
+                    additionalCost[i][j] = diff * d->attacksPerSecond * d->damage * d->health;
+                }
+            }
         }
     }
 }
 
+// Funcion auxilitar propia que comprueba si un nodo se encuentra dentro de una lista (vector de la stl)
 bool nodoEnLista(AStarNode* nodo, std::vector<AStarNode*> lista)
 {
     return (lista.end() != std::find(lista.begin(), lista.end(), nodo));
@@ -56,17 +66,16 @@ void DEF_LIB_EXPORTED calculatePath(AStarNode* originNode, AStarNode* targetNode
                                     float** additionalCost,
                                     std::list<Vector3> &path)
 {
-    unsigned long iter = 0;
-    float min = INF_F;                      // Distancia minima es el maximo valor para los float en esta maquina
+    float min = INF_F; // Distancia minima es el maximo valor para los float en esta maquina
     AStarNode* current = originNode;
-    std::list<Vector3> auxiliarPath;
+    std::list<Vector3> auxiliarPath; // vector auxiliar para ir almacenando la mejor solucion de forma parcial
     
     std::vector<AStarNode*> nodosCerrados;
     
     std::vector<AStarNode*> nodosAbiertos;
-    nodosAbiertos.push_back(current);
+    nodosAbiertos.push_back(current); // Se incluye el nodo actual a la lista de abiertos
     
-    std::make_heap (nodosAbiertos.begin(), nodosAbiertos.end());
+    std::make_heap (nodosAbiertos.begin(), nodosAbiertos.end()); // Se crea montículo con la lista de nodos abiertos
     
     while(!nodosAbiertos.empty())
     {
@@ -82,13 +91,19 @@ void DEF_LIB_EXPORTED calculatePath(AStarNode* originNode, AStarNode* targetNode
             {
                 if(!nodoEnLista(nodo, nodosCerrados))
                 {
-                    float distTarget = _sdistance(nodo->position, targetNode->position);
-                    float distParent = _sdistance(nodo->position, current->position);
+                    float distTarget = _sdistance(nodo->position, targetNode->position); // Distancia euclidea, tratada como la manhattan
+                    float distParent = _sdistance(nodo->position, current->position); // Distancia con el padre
+                    
                     if(!nodoEnLista(nodo, nodosAbiertos))
                     {
-                        nodo->G = distParent + current->G;
-                        nodo->F = distTarget + nodo->G;
-                        nodo->parent = current;
+                        int i = (int) (nodo->position.y / cellsHeight);
+                        int j = (int) (nodo->position.x / cellsWidth);
+                        float heu = additionalCost[i][j];  // Se obtiene el valor adicional a la heuristica
+                        
+                        nodo->H = distTarget + heu; // Heuristica mas su valor adicional
+                        nodo->G = distParent + current->G; // Distancia recorrida
+                        nodo->F = nodo->G + nodo->H; // Suma de distancia recorrida y heuristica
+                        nodo->parent = current; // En este nodo se setea su padre al nodo actual
                         
                         nodosAbiertos.push_back(nodo);
                     } else
@@ -102,19 +117,18 @@ void DEF_LIB_EXPORTED calculatePath(AStarNode* originNode, AStarNode* targetNode
                 }
             }
             
-            struct CompararAStarNode
+            struct CompararAStarNode // Objeto funcion para comparar que AStarNode es mejor
             {
                 int operator() (const AStarNode* a, const AStarNode* b) const
                 { return a->F < b->F; }
             } f;
             
             std::sort_heap (nodosAbiertos.begin(), nodosAbiertos.end(), f);
-            
-            ++iter;
         }
         
-        if(current == targetNode)
+        if(current == targetNode) // Si el nodo actual es igual al target
         {
+            // Se calcula el coste de esta solucion (puede que no sea la mejor)
             float mejorSolucion = 0;
             while(current != originNode && current != NULL)
             {
@@ -123,7 +137,8 @@ void DEF_LIB_EXPORTED calculatePath(AStarNode* originNode, AStarNode* targetNode
                 auxiliarPath.push_front(current->position);
                 current = current->parent;
             }
-            if(mejorSolucion < min)
+            
+            if(mejorSolucion < min) // Si es la mejor solucion encontrada, se impone como la solucion de menor coste
             {
                 min = mejorSolucion;
                 path = auxiliarPath;

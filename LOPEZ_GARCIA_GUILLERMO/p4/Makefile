@@ -1,5 +1,5 @@
 APELLIDO1_APELLIDO2_NOMBRE = APELLIDO1_APELLIDO2_NOMBRE
-LEVEL = 3324
+LEVEL = 2220
 
 ####################### FIN CONFIGURACION ###########################
 
